@@ -1,0 +1,3 @@
+[submodule "Other/libc"]
+	path = Other/libc
+	url = https://github.com/koperatingsystem/libc
