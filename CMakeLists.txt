@@ -17,23 +17,22 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+cmake_minimum_required(VERSION 3.18.0)
+
 set(CMAKE_SYSTEM_NAME Generic)
 
-cmake_minimum_required(VERSION 3.0.0)
 project(kOS.Kernel LANGUAGES C VERSION 1.0.0)
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/BuildScripts)
+if(NOT ${CMAKE_C_COMPILER_ID} STREQUAL "Clang")
+    message(FATAL_ERROR "kOS.libc requires to be built using LLVM/clang.")
+endif()
 
-include(RuntimeSetup)
-include(Utilities)
+if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
+    find_program(LD_LLD NAMES ld.lld REQUIRED)
+    set(CMAKE_C_LINK_EXECUTABLE "\"${LD_LLD}\" <OBJECTS> -o <TARGET> <LINK_LIBRARIES> <LINK_FLAGS>")
+endif()
 
 add_executable(kOS.Kernel
-    ${CMAKE_CURRENT_LIST_DIR}/Includes/Kernel/TerminalIO.h
-    ${CMAKE_CURRENT_LIST_DIR}/Includes/Timing.h
-
-    ${CMAKE_CURRENT_LIST_DIR}/Sources/Platforms/i386/TerminalIO.c
-    ${CMAKE_CURRENT_LIST_DIR}/Sources/Platforms/i386/VGA.h
-
     ${CMAKE_CURRENT_LIST_DIR}/Sources/Kernel/Main.c
 )
 
@@ -43,10 +42,12 @@ add_dependencies(kOS.Kernel kOS.libc)
 target_compile_definitions(kOS.libc PRIVATE __is_libk)
 target_include_directories(kOS.libc PRIVATE ${CMAKE_CURRENT_LIST_DIR}/Includes)
 
-target_compile_options(kOS.Kernel PRIVATE -mcmodel=large -mno-red-zone -mno-mmx -mno-sse -mno-sse2)
+target_compile_options(kOS.Kernel PRIVATE --target=amd64-pc-none -m64 -mcmodel=large -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -Wall -Werror)
 target_include_directories(kOS.Kernel PRIVATE ${CMAKE_CURRENT_LIST_DIR}/Includes)
 
-target_link_options(kOS.Kernel PRIVATE -ekOS_main)
+target_link_options(kOS.Kernel PRIVATE -ekOS_main -nostdlib)
 target_link_libraries(kOS.Kernel PRIVATE kOS.libc)
 
-kOS_Set_Up_Target(kOS.Kernel)
+if(NOT ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
+    target_link_options(${target} PRIVATE --target=amd64-pc-none) # TODO: fix LLD's problems outside of Windows
+endif()

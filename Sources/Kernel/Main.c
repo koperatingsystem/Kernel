@@ -17,14 +17,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <Kernel/TerminalIO.h>
-
 #include <stdbool.h>
-#include <stdio.h>
 
 void kOS_main(void)
 {
-    Terminal_Init();
-
     while (true) ;
 }
