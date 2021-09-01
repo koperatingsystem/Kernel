@@ -39,9 +39,6 @@ add_executable(kOS.Kernel
 add_subdirectory(Other/libc)
 add_dependencies(kOS.Kernel kOS.libc)
 
-target_compile_definitions(kOS.libc PRIVATE __is_libk)
-target_include_directories(kOS.libc PRIVATE ${CMAKE_CURRENT_LIST_DIR}/Includes)
-
 target_compile_options(kOS.Kernel PRIVATE --target=amd64-pc-none -m64 -mcmodel=large -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -Wall -Werror)
 target_include_directories(kOS.Kernel PRIVATE ${CMAKE_CURRENT_LIST_DIR}/Includes)
 
@@ -49,5 +46,5 @@ target_link_options(kOS.Kernel PRIVATE -ekOS_main -nostdlib)
 target_link_libraries(kOS.Kernel PRIVATE kOS.libc)
 
 if(NOT ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
-    target_link_options(${target} PRIVATE --target=amd64-pc-none) # TODO: fix LLD's problems outside of Windows
+    target_link_options(kOS.Kernel PRIVATE --target=amd64-pc-none) # TODO: fix LLD's problems outside of Windows
 endif()
